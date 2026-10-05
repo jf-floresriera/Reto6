@@ -26,9 +26,6 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.DifficultyLevel
 
-/**
- * Tarjeta Dashboard con el marcador histórico de partidas.
- */
 @Composable
 fun ScoreBoardCard(
     humanWins: Int,
@@ -44,72 +41,74 @@ fun ScoreBoardCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Fila superior: Título y Badges de Configuración
+            // Título
+            Text(
+                text = "Marcador Histórico",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Badges alineados
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Marcador Histórico",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    // Badge de Sonido
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                if (soundEnabled) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.outline
-                            )
-                            .clickable { onSoundToggleClick() }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = if (soundEnabled) "Audio: ON" else "Audio: OFF",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimary
+                // Badge de Audio
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            if (soundEnabled) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.outline
                         )
-                    }
+                        .clickable { onSoundToggleClick() }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = if (soundEnabled) "Audio: ON" else "Audio: OFF",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                }
 
-                    // Badge de Dificultad
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable { onDifficultyClick() }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "Dificultad: ${difficulty.label}",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
+                // Badge de Dificultad
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable { onDifficultyClick() }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Dificultad: ${difficulty.label}",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Fila de Contadores
+            // Contadores
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -118,7 +117,7 @@ fun ScoreBoardCard(
                 ScoreItem(
                     label = "Jugador (X)",
                     value = humanWins,
-                    color = Color(0xFF2196F3)
+                    color = Color(0xFF1E88E5)
                 )
 
                 ScoreItem(
@@ -130,7 +129,7 @@ fun ScoreBoardCard(
                 ScoreItem(
                     label = "CPU (O)",
                     value = computerWins,
-                    color = Color(0xFFE91E63)
+                    color = Color(0xFFE53935)
                 )
             }
         }
@@ -148,13 +147,13 @@ private fun ScoreItem(
     ) {
         Text(
             text = value.toString(),
-            fontSize = 22.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
             color = color
         )
         Text(
             text = label,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

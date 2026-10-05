@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -162,7 +164,6 @@ fun TicTacToeScreen(
                     )
                 }
 
-                // Diálogos Modales
                 if (uiState.winner != GameWinner.NONE) {
                     VictoryDialog(
                         winner = uiState.winner,
@@ -237,12 +238,11 @@ private fun PortraitContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón Verde "REINICIAR JUEGO"
         Button(
             onClick = onResetBoard,
             shape = RoundedCornerShape(4.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2E7D32) // Verde
+                containerColor = Color(0xFF2E7D32)
             ),
             modifier = Modifier.fillMaxWidth(0.85f)
         ) {
@@ -293,21 +293,21 @@ private fun LandscapeContent(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 12.dp)
+                .padding(end = 8.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             TurnStatusCard(uiState = uiState)
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = onResetBoard,
@@ -320,12 +320,12 @@ private fun LandscapeContent(
                 Text(
                     text = "REINICIAR JUEGO",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = Color.White
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             ScoreBoardCard(
                 humanWins = uiState.humanWins,
@@ -339,21 +339,21 @@ private fun LandscapeContent(
                 onThemeClick = onThemeClick
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             OutlinedButton(
                 onClick = onResetScores,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth(0.9f)
             ) {
-                Text(text = "Reiniciar Marcador", fontSize = 12.sp)
+                Text(text = "Reiniciar Marcador", fontSize = 11.sp)
             }
         }
 
         Box(
             modifier = Modifier
                 .weight(1f)
-                .padding(start = 12.dp),
+                .padding(start = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             GameBoardView(
@@ -361,7 +361,9 @@ private fun LandscapeContent(
                 winningLine = uiState.winningLine,
                 selectedTheme = uiState.selectedTheme,
                 onTileClick = onTileClick,
-                modifier = Modifier.fillMaxWidth(0.9f)
+                modifier = Modifier
+                    .fillMaxHeight(0.95f)
+                    .aspectRatio(1f)
             )
         }
     }
@@ -385,11 +387,11 @@ private fun TurnStatusCard(uiState: GameState) {
     ) {
         Text(
             text = statusText,
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF0D47A1),
             modifier = Modifier
-                .padding(vertical = 8.dp, horizontal = 16.dp)
+                .padding(vertical = 6.dp, horizontal = 12.dp)
                 .fillMaxWidth(),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )

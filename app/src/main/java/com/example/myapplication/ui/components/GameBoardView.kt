@@ -45,11 +45,9 @@ fun GameBoardView(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .padding(8.dp),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            .aspectRatio(1f),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
@@ -57,7 +55,7 @@ fun GameBoardView(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(8.dp),
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             for (row in 0..2) {
@@ -79,7 +77,7 @@ fun GameBoardView(
                             modifier = Modifier
                                 .weight(1f)
                                 .aspectRatio(1f)
-                                .padding(6.dp)
+                                .padding(4.dp)
                         )
                     }
                 }
@@ -107,8 +105,8 @@ private fun TileCell(
         label = "TileScale"
     )
 
-    val player1Color = Color(0xFF1E88E5) // Azul
-    val player2Color = Color(0xFFE53935) // Rojo
+    val player1Color = Color(0xFF1E88E5)
+    val player2Color = Color(0xFFE53935)
     val winningGold = Color(0xFFFFD700)
 
     val backgroundColor by animateColorAsState(
@@ -138,12 +136,12 @@ private fun TileCell(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(backgroundColor)
             .border(
                 width = if (isWinningTile) 3.dp else 1.dp,
                 color = borderColor,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(10.dp)
             )
             .clickable(
                 interactionSource = interactionSource,
@@ -155,7 +153,7 @@ private fun TileCell(
         Text(
             text = displaySymbol,
             color = symbolColor,
-            fontSize = 36.sp,
+            fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.scale(scale)
         )
