@@ -23,16 +23,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.DifficultyLevel
 
 /**
- * ============================================================================
- * CONCEPTO EDUCATIVO: COMPONENTES REUTILIZABLES DE INTERFAZ (DASHBOARD CARD)
- * ============================================================================
- * 'ScoreBoardCard' muestra el marcador acumulado de partidas persistido en la app.
- *
- * Incluye un Badge interactivo que permite al usuario ver y cambiar el nivel de
- * dificultad (Fácil, Medio, Difícil).
+ * Tarjeta Dashboard con el marcador histórico de partidas.
  */
 @Composable
 fun ScoreBoardCard(
@@ -40,7 +35,11 @@ fun ScoreBoardCard(
     computerWins: Int,
     ties: Int,
     difficulty: DifficultyLevel,
+    soundEnabled: Boolean,
+    selectedTheme: AppTheme,
     onDifficultyClick: () -> Unit,
+    onSoundToggleClick: () -> Unit,
+    onThemeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -57,7 +56,7 @@ fun ScoreBoardCard(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Fila superior: Título y Badge de Dificultad
+            // Fila superior: Título y Badges de Configuración
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -65,31 +64,52 @@ fun ScoreBoardCard(
             ) {
                 Text(
                     text = "Marcador Histórico",
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
-                // Badge de dificultad clickable
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.primary)
-                        .clickable { onDifficultyClick() }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = "Dificultad: ${difficulty.label}",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Badge de Sonido
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                if (soundEnabled) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outline
+                            )
+                            .clickable { onSoundToggleClick() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = if (soundEnabled) "Audio: ON" else "Audio: OFF",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
+                    // Badge de Dificultad
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable { onDifficultyClick() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "Dificultad: ${difficulty.label}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila de Contadores (Tú | Empates | CPU)
+            // Fila de Contadores
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -128,7 +148,7 @@ private fun ScoreItem(
     ) {
         Text(
             text = value.toString(),
-            fontSize = 24.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.ExtraBold,
             color = color
         )

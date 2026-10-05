@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -22,11 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.domain.GameWinner
 
 /**
- * ============================================================================
- * CONCEPTO EDUCATIVO: DIÁLOGOS DE ALERTA Y FEEDBACK AL USUARIO
- * ============================================================================
- * 'VictoryDialog' notifica el resultado del juego (Ganaste, Perdiste o Empate)
- * de forma contextual utilizando 'AlertDialog' de Material 3.
+ * Diálogo flotante de notificación de resultado de partida.
  */
 @Composable
 fun VictoryDialog(
@@ -36,11 +31,11 @@ fun VictoryDialog(
 ) {
     if (winner == GameWinner.NONE) return
 
-    val (title, message, emoji) = when (winner) {
-        GameWinner.HUMAN -> Triple("¡Felicidades! 🎉", "¡Has derrotado a la Inteligencia Artificial!", "🏆")
-        GameWinner.COMPUTER -> Triple("¡CPU Victoriosa! 🤖", "La computadora ha ganado esta partida. ¡Inténtalo de nuevo!", "💻")
-        GameWinner.TIE -> Triple("¡Empate Perfecto! 🤝", "Ha sido una partida muy disputada.", "⚖️")
-        GameWinner.NONE -> Triple("", "", "")
+    val (title, message) = when (winner) {
+        GameWinner.HUMAN -> Pair("Victoria del Jugador", "Has derrotado a la Computadora.")
+        GameWinner.COMPUTER -> Pair("Victoria de la CPU", "La computadora ha ganado esta partida.")
+        GameWinner.TIE -> Pair("Empate", "La partida ha finalizado sin un ganador.")
+        GameWinner.NONE -> Pair("", "")
     }
 
     AlertDialog(
@@ -51,11 +46,6 @@ fun VictoryDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = emoji,
-                    fontSize = 48.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = title,
                     fontSize = 20.sp,

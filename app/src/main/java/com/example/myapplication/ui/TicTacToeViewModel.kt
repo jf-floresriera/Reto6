@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.audio.SoundManager
 import com.example.myapplication.data.PreferencesManager
+import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.BoardTile
 import com.example.myapplication.domain.DifficultyLevel
 import com.example.myapplication.domain.GameState
@@ -18,23 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * ============================================================================
- * CONCEPTO EDUCATIVO: VIEWMODEL Y ROTACIÓN DE PANTALLA (RETO 6)
- * ============================================================================
- * ¿Por qué esta clase resuelve el problema de la rotación de pantalla?
- *
- * 1. **Supervivencia a Cambios de Configuración:**
- *    Cuando el usuario gira la pantalla (Portrait <-> Landscape), Android destruye
- *    la Activity actual y la vuelve a crear. Las variables tradicionales de la Activity
- *    se reiniciarían. Sin embargo, el 'ViewModel' permanece ALMACENADO EN MEMORIA por el
- *    ViewModelStoreOwner y NO SE DESTRUYE durante la rotación.
- *
- * 2. **SavedStateHandle:**
- *    Permite guardar el estado incluso si el sistema operativo mata el proceso por
- *    falta de memoria en segundo plano.
- *
- * 3. **StateFlow:**
- *    Flujo de datos reactivo e inmutable que la UI de Compose escucha continuamente.
+ * ViewModel que conserva el estado inmutable del juego durante cambios de configuración.
  */
 class TicTacToeViewModel(
     application: Application,
@@ -43,30 +29,27 @@ class TicTacToeViewModel(
 
     private val preferencesManager = PreferencesManager(application)
     private val gameEngine = TicTacToeGameEngine()
+    private val soundManager = SoundManager()
 
-    // Estado privado mutable
     private val _uiState = MutableStateFlow(
         GameState(
             humanWins = preferencesManager.getHumanWins(),
             computerWins = preferencesManager.getComputerWins(),
             ties = preferencesManager.getTies(),
-            difficulty = preferencesManager.getDifficulty()
+            difficulty = preferencesManager.getDifficulty(),
+            soundEnabled = preferencesManager.isSoundEnabled(),
+            selectedTheme = preferencesManager.getTheme()
         )
     )
 
-    // Estado público inmutable expuesto a la vista Compose
     val uiState: StateFlow<GameState> = _uiState.asStateFlow()
 
     /**
-     * Procesa la pulsación de una casilla por parte del jugador humano.
+     * Procesa la interacción del jugador humano en una casilla.
      */
     fun onTileClicked(index: Int) {
         val currentState = _uiState.value
 
-        // Ignorar el toque si:
-        // - El juego ya terminó
-        // - Es turno de la CPU o la CPU está pensando
-        // - La casilla ya está ocupada
         if (currentState.isGameOver ||
             !currentState.isHumanTurn ||
             currentState.isCpuThinking ||
@@ -75,18 +58,18 @@ class TicTacToeViewModel(
             return
         }
 
-        // 1. Marcar la casilla del jugador humano
+        // Reproducir sonido de movimiento humano
+        soundManager.playHumanMove(currentState.soundEnabled)
+
         val updatedBoard = currentState.board.toMutableList().apply {
             set(index, BoardTile.HUMAN)
         }
 
-        // 2. Verificar si el humano ganó o empató
         val (winner, winningLine) = gameEngine.checkWinner(updatedBoard)
 
         if (winner != GameWinner.NONE) {
             handleGameEnd(updatedBoard, winner, winningLine)
         } else {
-            // El juego continúa: Pasar el turno a la Computadora (CPU)
             _uiState.update {
                 it.copy(
                     board = updatedBoard,
@@ -94,24 +77,24 @@ class TicTacToeViewModel(
                     isCpuThinking = true
                 )
             }
-            // Ejecutar el turno de la CPU de forma asíncrona (Corrutinas)
             triggerCpuMove()
         }
     }
 
     /**
-     * Ejecuta el movimiento de la Inteligencia Artificial simulando una breve pausa
-     * para dar una sensación natural de pensamiento.
+     * Ejecuta el movimiento de la máquina de forma asíncrona.
      */
     private fun triggerCpuMove() {
         viewModelScope.launch {
-            // Pausa deliberada de 500ms para efecto visual
             delay(500)
 
             val currentState = _uiState.value
             val cpuMove = gameEngine.getCpuMove(currentState.board, currentState.difficulty)
 
             if (cpuMove != null) {
+                // Reproducir sonido de movimiento de la computadora
+                soundManager.playComputerMove(currentState.soundEnabled)
+
                 val updatedBoard = currentState.board.toMutableList().apply {
                     set(cpuMove, BoardTile.COMPUTER)
                 }
@@ -121,7 +104,6 @@ class TicTacToeViewModel(
                 if (winner != GameWinner.NONE) {
                     handleGameEnd(updatedBoard, winner, winningLine)
                 } else {
-                    // Volver al turno del Jugador Humano
                     _uiState.update {
                         it.copy(
                             board = updatedBoard,
@@ -137,8 +119,7 @@ class TicTacToeViewModel(
     }
 
     /**
-     * Maneja la finalización de la partida, actualiza marcadores y los guarda
-     * en SharedPreferences (Persistencia).
+     * Gestiona el cierre del juego, sonido del resultado y persistencia.
      */
     private fun handleGameEnd(
         board: List<BoardTile>,
@@ -151,13 +132,21 @@ class TicTacToeViewModel(
         var newTies = current.ties
 
         when (winner) {
-            GameWinner.HUMAN -> newHumanWins++
-            GameWinner.COMPUTER -> newComputerWins++
-            GameWinner.TIE -> newTies++
+            GameWinner.HUMAN -> {
+                newHumanWins++
+                soundManager.playWinSound(current.soundEnabled)
+            }
+            GameWinner.COMPUTER -> {
+                newComputerWins++
+                soundManager.playLoseSound(current.soundEnabled)
+            }
+            GameWinner.TIE -> {
+                newTies++
+                soundManager.playTieSound(current.soundEnabled)
+            }
             GameWinner.NONE -> {}
         }
 
-        // Guardar persistentemente en almacenamiento local
         preferencesManager.saveScores(newHumanWins, newComputerWins, newTies)
 
         _uiState.update {
@@ -173,9 +162,7 @@ class TicTacToeViewModel(
         }
     }
 
-    /**
-     * Inicia una nueva partida reseteando el tablero sin borrar el historial.
-     */
+    /** Reiniciar tablero sin borrar contadores. */
     fun resetBoard() {
         _uiState.update {
             it.copy(
@@ -188,25 +175,36 @@ class TicTacToeViewModel(
         }
     }
 
-    /**
-     * Cambia la dificultad y la guarda en SharedPreferences.
-     */
+    /** Cambiar y guardar nivel de dificultad. */
     fun setDifficulty(difficulty: DifficultyLevel) {
         preferencesManager.saveDifficulty(difficulty)
         _uiState.update { it.copy(difficulty = difficulty) }
         resetBoard()
     }
 
-    /**
-     * Muestra u oculta el diálogo modal de dificultad.
-     */
+    /** Alternar y guardar estado del sonido (Activado/Desactivado). */
+    fun toggleSound() {
+        val newSoundState = !_uiState.value.soundEnabled
+        preferencesManager.saveSoundEnabled(newSoundState)
+        _uiState.update { it.copy(soundEnabled = newSoundState) }
+    }
+
+    /** Seleccionar y guardar tema visual. */
+    fun setTheme(theme: AppTheme) {
+        preferencesManager.saveTheme(theme)
+        _uiState.update { it.copy(selectedTheme = theme) }
+    }
+
+    /** Visibilidad de diálogos. */
     fun showDifficultyDialog(show: Boolean) {
         _uiState.update { it.copy(showDifficultyDialog = show) }
     }
 
-    /**
-     * Borra el historial de marcadores de SharedPreferences y reinicia contadores.
-     */
+    fun showThemeDialog(show: Boolean) {
+        _uiState.update { it.copy(showThemeDialog = show) }
+    }
+
+    /** Reiniciar marcadores acumulados. */
     fun resetScores() {
         preferencesManager.resetScores()
         _uiState.update {

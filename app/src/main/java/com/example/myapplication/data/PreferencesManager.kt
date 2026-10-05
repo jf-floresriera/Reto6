@@ -2,19 +2,11 @@ package com.example.myapplication.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.DifficultyLevel
 
 /**
- * ============================================================================
- * CONCEPTO EDUCATIVO: PERSISTENCIA DE DATOS LOCAL CON SHAREDPREFERENCES (RETO 6)
- * ============================================================================
- * 'SharedPreferences' es una API nativa de Android diseñada para almacenar pares de
- * Clave-Valor (Key-Value) de forma persistente en un archivo XML interno del dispositivo.
- *
- * En este reto (según la guía oficial de Harding University):
- * 1. Nombre del archivo de preferencias: "ttt_prefs.xml"
- * 2. Claves de persistencia: "mHumanWins", "mComputerWins", "mTies", "mDifficultyLevel"
- * 3. Sobrevive al cierre completo de la aplicación, apagado del dispositivo y reinicios.
+ * Gestor de persistencia mediante SharedPreferences nativas de Android.
  */
 class PreferencesManager(context: Context) {
 
@@ -27,48 +19,30 @@ class PreferencesManager(context: Context) {
         private const val KEY_COMPUTER_WINS = "mComputerWins"
         private const val KEY_TIES = "mTies"
         private const val KEY_DIFFICULTY = "mDifficultyLevel"
+        private const val KEY_SOUND_ENABLED = "mSoundEnabled"
+        private const val KEY_THEME = "mThemeChoice"
     }
 
-    /**
-     * Guarda el marcador completo de partidas en SharedPreferences.
-     */
+    /** Guardar marcador acumulado. */
     fun saveScores(humanWins: Int, computerWins: Int, ties: Int) {
         sharedPreferences.edit()
             .putInt(KEY_HUMAN_WINS, humanWins)
             .putInt(KEY_COMPUTER_WINS, computerWins)
             .putInt(KEY_TIES, ties)
-            .apply() // .apply() realiza el guardado asíncrono en segundo plano
+            .apply()
     }
 
-    /**
-     * Obtiene las victorias del jugador humano (0 si no se ha guardado nada).
-     */
     fun getHumanWins(): Int = sharedPreferences.getInt(KEY_HUMAN_WINS, 0)
-
-    /**
-     * Obtiene las victorias de la computadora (0 por defecto).
-     */
     fun getComputerWins(): Int = sharedPreferences.getInt(KEY_COMPUTER_WINS, 0)
-
-    /**
-     * Obtiene la cantidad de empates (0 por defecto).
-     */
     fun getTies(): Int = sharedPreferences.getInt(KEY_TIES, 0)
 
-    /**
-     * EXTRA CHALLENGE 1:
-     * Guarda el nivel de dificultad seleccionado convirtiendo el enum a String.
-     */
+    /** Guardar nivel de dificultad. */
     fun saveDifficulty(difficulty: DifficultyLevel) {
         sharedPreferences.edit()
             .putString(KEY_DIFFICULTY, difficulty.name)
             .apply()
     }
 
-    /**
-     * EXTRA CHALLENGE 1:
-     * Recupera la dificultad guardada convirtiendo la cadena de texto de nuevo al Enum.
-     */
     fun getDifficulty(): DifficultyLevel {
         val savedName = sharedPreferences.getString(KEY_DIFFICULTY, DifficultyLevel.EASY.name)
         return try {
@@ -78,9 +52,32 @@ class PreferencesManager(context: Context) {
         }
     }
 
-    /**
-     * Reinicia el marcador a cero en el almacenamiento persistente ttt_prefs.xml.
-     */
+    /** Guardar y recuperar estado del sonido. */
+    fun saveSoundEnabled(enabled: Boolean) {
+        sharedPreferences.edit()
+            .putBoolean(KEY_SOUND_ENABLED, enabled)
+            .apply()
+    }
+
+    fun isSoundEnabled(): Boolean = sharedPreferences.getBoolean(KEY_SOUND_ENABLED, true)
+
+    /** Guardar y recuperar tema visual. */
+    fun saveTheme(theme: AppTheme) {
+        sharedPreferences.edit()
+            .putString(KEY_THEME, theme.name)
+            .apply()
+    }
+
+    fun getTheme(): AppTheme {
+        val savedTheme = sharedPreferences.getString(KEY_THEME, AppTheme.CLASSIC.name)
+        return try {
+            AppTheme.valueOf(savedTheme ?: AppTheme.CLASSIC.name)
+        } catch (e: Exception) {
+            AppTheme.CLASSIC
+        }
+    }
+
+    /** Reiniciar marcadores a cero. */
     fun resetScores() {
         sharedPreferences.edit()
             .putInt(KEY_HUMAN_WINS, 0)

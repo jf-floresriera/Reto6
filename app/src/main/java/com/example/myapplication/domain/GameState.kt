@@ -1,19 +1,8 @@
 package com.example.myapplication.domain
 
 /**
- * ============================================================================
- * CONCEPTO EDUCATIVO: ESTADO INMUTABLE Y UNIDIRECTIONAL DATA FLOW (UDF)
- * ============================================================================
- * Esta Data Class representa una "fotografía" completa e inmutable del estado del
- * juego en un instante de tiempo determinado.
- *
- * En Jetpack Compose, el estado fluye en una sola dirección:
- * ViewModel (Emite GameState) ---> Pantalla Composable (Renderiza la UI)
- *
- * Al ser inmutable, garantizamos que la UI se redibuje (recomposición) de manera
- * eficiente y segura únicamente cuando cambia alguna propiedad.
+ * Representa el estado inmutable de la pantalla de juego.
  */
-
 enum class GameWinner {
     NONE,
     HUMAN,
@@ -22,24 +11,16 @@ enum class GameWinner {
 }
 
 data class GameState(
-    /**
-     * Arreglo de 9 posiciones que representa la cuadrícula 3x3 del tablero.
-     * Posiciones:
-     *  0 | 1 | 2
-     *  ---------
-     *  3 | 4 | 5
-     *  ---------
-     *  6 | 7 | 8
-     */
+    /** Cuadrícula 3x3 del tablero. */
     val board: List<BoardTile> = List(9) { BoardTile.EMPTY },
 
-    /** Indica si actualmente es el turno del jugador humano. */
+    /** Indica si es el turno del jugador humano. */
     val isHumanTurn: Boolean = true,
 
-    /** Ganador del juego actual (NONE si la partida sigue en curso). */
+    /** Ganador del juego actual. */
     val winner: GameWinner = GameWinner.NONE,
 
-    /** Lista con los 3 índices de las casillas que conforman la línea ganadora (ej. [0, 1, 2]). */
+    /** Índices de las casillas de la línea ganadora. */
     val winningLine: List<Int>? = null,
 
     /** Marcador acumulado de victorias del jugador humano. */
@@ -54,13 +35,22 @@ data class GameState(
     /** Nivel de dificultad actual para la CPU. */
     val difficulty: DifficultyLevel = DifficultyLevel.EASY,
 
-    /** Indica si se debe mostrar el diálogo de selección de dificultad. */
+    /** Control del estado de audio (activado/desactivado). */
+    val soundEnabled: Boolean = true,
+
+    /** Tema visual seleccionado en la aplicación. */
+    val selectedTheme: AppTheme = AppTheme.CLASSIC,
+
+    /** Control de visibilidad del diálogo de dificultad. */
     val showDifficultyDialog: Boolean = false,
 
-    /** Indica si hay un movimiento de la CPU en proceso (para bloquear clicks del usuario). */
+    /** Control de visibilidad del diálogo de temas visuales. */
+    val showThemeDialog: Boolean = false,
+
+    /** Indica si la CPU está procesando su movimiento. */
     val isCpuThinking: Boolean = false
 ) {
-    /** Propiedad calculada: Retorna verdades si el juego ha terminado. */
+    /** Retorna verdadero si el juego ha finalizado. */
     val isGameOver: Boolean
         get() = winner != GameWinner.NONE
 }
