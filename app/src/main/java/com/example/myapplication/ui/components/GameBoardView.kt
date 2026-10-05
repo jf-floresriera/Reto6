@@ -32,24 +32,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.BoardTile
 
-/**
- * ============================================================================
- * CONCEPTO EDUCATIVO: DECLARATIVE UI & COMPOSITION IN JETPACK COMPOSE
- * ============================================================================
- * 'GameBoardView' renderiza la cuadrícula 3x3 del Triqui de forma puramente declarativa.
- *
- * Ventajas del diseño moderno en Jetpack Compose:
- * 1. Sin necesidad de XML ni findViewById.
- * 2. Recomposición automática cuando cambia la lista 'board'.
- * 3. Animación fluida de escala y color para las marcas 'X' y 'O'.
- * 4. Resaltado visual en dorado para la combinación ganadora.
- */
 @Composable
 fun GameBoardView(
     board: List<BoardTile>,
     winningLine: List<Int>?,
+    selectedTheme: AppTheme,
     onTileClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -58,10 +48,10 @@ fun GameBoardView(
             .fillMaxWidth()
             .aspectRatio(1f)
             .padding(8.dp),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
     ) {
         Column(
@@ -83,6 +73,7 @@ fun GameBoardView(
 
                         TileCell(
                             tile = board[index],
+                            selectedTheme = selectedTheme,
                             isWinningTile = isWinningTile,
                             onClick = { onTileClick(index) },
                             modifier = Modifier
@@ -100,13 +91,13 @@ fun GameBoardView(
 @Composable
 private fun TileCell(
     tile: BoardTile,
+    selectedTheme: AppTheme,
     isWinningTile: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    // Animación de escala al aparecer la marca
     val scale by animateFloatAsState(
         targetValue = if (tile != BoardTile.EMPTY) 1f else 0.8f,
         animationSpec = spring(
@@ -116,10 +107,9 @@ private fun TileCell(
         label = "TileScale"
     )
 
-    // Colores personalizados
-    val humanColor = Color(0xFF2196F3)    // Azul vibrante para X
-    val computerColor = Color(0xFFE91E63) // Rosa/Rojo para O
-    val winningGold = Color(0xFFFFD700)   // Dorado para línea ganadora
+    val player1Color = Color(0xFF1E88E5) // Azul
+    val player2Color = Color(0xFFE53935) // Rojo
+    val winningGold = Color(0xFFFFD700)
 
     val backgroundColor by animateColorAsState(
         targetValue = when {
@@ -134,20 +124,26 @@ private fun TileCell(
         else -> MaterialTheme.colorScheme.outlineVariant
     }
 
+    val displaySymbol = when (tile) {
+        BoardTile.HUMAN -> selectedTheme.player1Symbol
+        BoardTile.COMPUTER -> selectedTheme.player2Symbol
+        BoardTile.EMPTY -> ""
+    }
+
     val symbolColor = when (tile) {
-        BoardTile.HUMAN -> humanColor
-        BoardTile.COMPUTER -> computerColor
+        BoardTile.HUMAN -> player1Color
+        BoardTile.COMPUTER -> player2Color
         BoardTile.EMPTY -> Color.Transparent
     }
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(backgroundColor)
             .border(
                 width = if (isWinningTile) 3.dp else 1.dp,
                 color = borderColor,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             )
             .clickable(
                 interactionSource = interactionSource,
@@ -157,9 +153,9 @@ private fun TileCell(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = tile.symbol,
+            text = displaySymbol,
             color = symbolColor,
-            fontSize = 38.sp,
+            fontSize = 36.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.scale(scale)
         )

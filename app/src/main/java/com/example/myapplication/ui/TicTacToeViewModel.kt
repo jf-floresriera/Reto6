@@ -9,6 +9,7 @@ import com.example.myapplication.data.PreferencesManager
 import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.BoardTile
 import com.example.myapplication.domain.DifficultyLevel
+import com.example.myapplication.domain.GameMode
 import com.example.myapplication.domain.GameState
 import com.example.myapplication.domain.GameWinner
 import com.example.myapplication.domain.TicTacToeGameEngine
@@ -19,9 +20,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel que conserva el estado inmutable del juego durante cambios de configuración.
- */
 class TicTacToeViewModel(
     application: Application,
     private val savedStateHandle: SavedStateHandle
@@ -37,6 +35,7 @@ class TicTacToeViewModel(
             computerWins = preferencesManager.getComputerWins(),
             ties = preferencesManager.getTies(),
             difficulty = preferencesManager.getDifficulty(),
+            gameMode = preferencesManager.getGameMode(),
             soundEnabled = preferencesManager.isSoundEnabled(),
             selectedTheme = preferencesManager.getTheme()
         )
@@ -44,46 +43,70 @@ class TicTacToeViewModel(
 
     val uiState: StateFlow<GameState> = _uiState.asStateFlow()
 
-    /**
-     * Procesa la interacción del jugador humano en una casilla.
-     */
     fun onTileClicked(index: Int) {
         val currentState = _uiState.value
 
         if (currentState.isGameOver ||
-            !currentState.isHumanTurn ||
             currentState.isCpuThinking ||
             currentState.board[index] != BoardTile.EMPTY
         ) {
             return
         }
 
-        // Reproducir sonido de movimiento humano
-        soundManager.playHumanMove(currentState.soundEnabled)
+        if (currentState.gameMode == GameMode.ONE_PLAYER) {
+            // Modo 1 Jugador vs AI
+            if (!currentState.isHumanTurn) return
 
-        val updatedBoard = currentState.board.toMutableList().apply {
-            set(index, BoardTile.HUMAN)
-        }
+            soundManager.playHumanMove(currentState.soundEnabled)
 
-        val (winner, winningLine) = gameEngine.checkWinner(updatedBoard)
-
-        if (winner != GameWinner.NONE) {
-            handleGameEnd(updatedBoard, winner, winningLine)
-        } else {
-            _uiState.update {
-                it.copy(
-                    board = updatedBoard,
-                    isHumanTurn = false,
-                    isCpuThinking = true
-                )
+            val updatedBoard = currentState.board.toMutableList().apply {
+                set(index, BoardTile.HUMAN)
             }
-            triggerCpuMove()
+
+            val (winner, winningLine) = gameEngine.checkWinner(updatedBoard)
+
+            if (winner != GameWinner.NONE) {
+                handleGameEnd(updatedBoard, winner, winningLine)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        board = updatedBoard,
+                        isHumanTurn = false,
+                        isCpuThinking = true
+                    )
+                }
+                triggerCpuMove()
+            }
+        } else {
+            // Modo 2 Jugadores Local
+            val activePlayerTile = if (currentState.isHumanTurn) BoardTile.HUMAN else BoardTile.COMPUTER
+
+            if (currentState.isHumanTurn) {
+                soundManager.playHumanMove(currentState.soundEnabled)
+            } else {
+                soundManager.playComputerMove(currentState.soundEnabled)
+            }
+
+            val updatedBoard = currentState.board.toMutableList().apply {
+                set(index, activePlayerTile)
+            }
+
+            val (winner, winningLine) = gameEngine.checkWinner(updatedBoard)
+
+            if (winner != GameWinner.NONE) {
+                handleGameEnd(updatedBoard, winner, winningLine)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        board = updatedBoard,
+                        isHumanTurn = !currentState.isHumanTurn,
+                        isCpuThinking = false
+                    )
+                }
+            }
         }
     }
 
-    /**
-     * Ejecuta el movimiento de la máquina de forma asíncrona.
-     */
     private fun triggerCpuMove() {
         viewModelScope.launch {
             delay(500)
@@ -92,7 +115,6 @@ class TicTacToeViewModel(
             val cpuMove = gameEngine.getCpuMove(currentState.board, currentState.difficulty)
 
             if (cpuMove != null) {
-                // Reproducir sonido de movimiento de la computadora
                 soundManager.playComputerMove(currentState.soundEnabled)
 
                 val updatedBoard = currentState.board.toMutableList().apply {
@@ -118,9 +140,6 @@ class TicTacToeViewModel(
         }
     }
 
-    /**
-     * Gestiona el cierre del juego, sonido del resultado y persistencia.
-     */
     private fun handleGameEnd(
         board: List<BoardTile>,
         winner: GameWinner,
@@ -162,7 +181,6 @@ class TicTacToeViewModel(
         }
     }
 
-    /** Reiniciar tablero sin borrar contadores. */
     fun resetBoard() {
         _uiState.update {
             it.copy(
@@ -175,27 +193,33 @@ class TicTacToeViewModel(
         }
     }
 
-    /** Cambiar y guardar nivel de dificultad. */
     fun setDifficulty(difficulty: DifficultyLevel) {
         preferencesManager.saveDifficulty(difficulty)
         _uiState.update { it.copy(difficulty = difficulty) }
         resetBoard()
     }
 
-    /** Alternar y guardar estado del sonido (Activado/Desactivado). */
+    fun setGameMode(gameMode: GameMode) {
+        preferencesManager.saveGameMode(gameMode)
+        _uiState.update { it.copy(gameMode = gameMode) }
+        resetBoard()
+    }
+
     fun toggleSound() {
         val newSoundState = !_uiState.value.soundEnabled
         preferencesManager.saveSoundEnabled(newSoundState)
         _uiState.update { it.copy(soundEnabled = newSoundState) }
     }
 
-    /** Seleccionar y guardar tema visual. */
     fun setTheme(theme: AppTheme) {
         preferencesManager.saveTheme(theme)
         _uiState.update { it.copy(selectedTheme = theme) }
     }
 
-    /** Visibilidad de diálogos. */
+    fun showGameModeDialog(show: Boolean) {
+        _uiState.update { it.copy(showGameModeDialog = show) }
+    }
+
     fun showDifficultyDialog(show: Boolean) {
         _uiState.update { it.copy(showDifficultyDialog = show) }
     }
@@ -204,7 +228,10 @@ class TicTacToeViewModel(
         _uiState.update { it.copy(showThemeDialog = show) }
     }
 
-    /** Reiniciar marcadores acumulados. */
+    fun showAboutDialog(show: Boolean) {
+        _uiState.update { it.copy(showAboutDialog = show) }
+    }
+
     fun resetScores() {
         preferencesManager.resetScores()
         _uiState.update {

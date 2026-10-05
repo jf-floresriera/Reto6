@@ -14,11 +14,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,12 +29,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,18 +47,16 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.GameState
 import com.example.myapplication.domain.GameWinner
+import com.example.myapplication.ui.components.AboutDialog
 import com.example.myapplication.ui.components.DifficultyDialog
 import com.example.myapplication.ui.components.GameBoardView
+import com.example.myapplication.ui.components.GameModeDialog
 import com.example.myapplication.ui.components.ScoreBoardCard
 import com.example.myapplication.ui.components.ThemeDialog
 import com.example.myapplication.ui.components.VictoryDialog
 
-/**
- * Pantalla principal responsiva de la aplicación con soporte para temas de color.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TicTacToeScreen(
@@ -65,29 +66,11 @@ fun TicTacToeScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    // Aplicar paleta de colores dinámicamente según el tema seleccionado
-    val colorScheme = when (uiState.selectedTheme) {
-        AppTheme.CLASSIC -> lightColorScheme(
-            primary = Color(0xFF2196F3),
-            primaryContainer = Color(0xFFE3F2FD),
-            onPrimaryContainer = Color(0xFF0D47A1)
-        )
-        AppTheme.OCEAN -> lightColorScheme(
-            primary = Color(0xFF009688),
-            primaryContainer = Color(0xFFE0F2F1),
-            onPrimaryContainer = Color(0xFF004D40)
-        )
-        AppTheme.DARK_NEON -> darkColorScheme(
-            primary = Color(0xFF00E676),
-            primaryContainer = Color(0xFF1B5E20),
-            onPrimaryContainer = Color(0xFFB9F6CA)
-        )
-        AppTheme.FOREST -> lightColorScheme(
-            primary = Color(0xFF4CAF50),
-            primaryContainer = Color(0xFFE8F5E9),
-            onPrimaryContainer = Color(0xFF1B5E20)
-        )
-    }
+    val colorScheme = lightColorScheme(
+        primary = Color(0xFF6200EE),
+        primaryContainer = Color(0xFF6200EE),
+        onPrimaryContainer = Color.White
+    )
 
     MaterialTheme(colorScheme = colorScheme) {
         Scaffold(
@@ -95,45 +78,61 @@ fun TicTacToeScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Triqui / Tic-Tac-Toe",
-                            fontWeight = FontWeight.Bold
+                            text = "Tres en Raya - Reto 6",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = Color(0xFF6200EE),
+                        titleContentColor = Color.White
                     ),
                     actions = {
-                        // Conmutador de Sonido
                         IconButton(onClick = { viewModel.toggleSound() }) {
                             Icon(
                                 imageVector = if (uiState.soundEnabled) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
-                                contentDescription = "Activar o Desactivar Sonido"
-                            )
-                        }
-                        // Selector de Tema
-                        IconButton(onClick = { viewModel.showThemeDialog(true) }) {
-                            Icon(
-                                imageVector = Icons.Default.Palette,
-                                contentDescription = "Seleccionar Tema Visual"
-                            )
-                        }
-                        // Selector de Dificultad
-                        IconButton(onClick = { viewModel.showDifficultyDialog(true) }) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Configuración de Dificultad"
-                            )
-                        }
-                        // Reiniciar Tablero
-                        IconButton(onClick = { viewModel.resetBoard() }) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Reiniciar Tablero"
+                                contentDescription = "Sound Toggle",
+                                tint = Color.White
                             )
                         }
                     }
                 )
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color(0xFFFAFAFA)
+                ) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { viewModel.resetBoard() },
+                        icon = { Icon(Icons.Default.Refresh, contentDescription = "New Game", tint = Color(0xFF6200EE)) },
+                        label = { Text("New Game", fontSize = 11.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { viewModel.showGameModeDialog(true) },
+                        icon = { Icon(Icons.Default.Share, contentDescription = "Game Mode") },
+                        label = { Text("Game Mode", fontSize = 11.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { viewModel.showDifficultyDialog(true) },
+                        icon = { Icon(Icons.AutoMirrored.Filled.FormatListBulleted, contentDescription = "Difficulty") },
+                        label = { Text("Difficulty", fontSize = 11.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { viewModel.showThemeDialog(true) },
+                        icon = { Icon(Icons.Default.Palette, contentDescription = "Tema") },
+                        label = { Text("Tema", fontSize = 11.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { viewModel.showAboutDialog(true) },
+                        icon = { Icon(Icons.Default.Info, contentDescription = "About") },
+                        label = { Text("About", fontSize = 11.sp) }
+                    )
+                }
             }
         ) { innerPadding ->
             Box(
@@ -172,6 +171,14 @@ fun TicTacToeScreen(
                     )
                 }
 
+                if (uiState.showGameModeDialog) {
+                    GameModeDialog(
+                        currentGameMode = uiState.gameMode,
+                        onGameModeSelected = { mode -> viewModel.setGameMode(mode) },
+                        onDismiss = { viewModel.showGameModeDialog(false) }
+                    )
+                }
+
                 if (uiState.showDifficultyDialog) {
                     DifficultyDialog(
                         currentDifficulty = uiState.difficulty,
@@ -185,6 +192,12 @@ fun TicTacToeScreen(
                         currentTheme = uiState.selectedTheme,
                         onThemeSelected = { theme -> viewModel.setTheme(theme) },
                         onDismiss = { viewModel.showThemeDialog(false) }
+                    )
+                }
+
+                if (uiState.showAboutDialog) {
+                    AboutDialog(
+                        onDismiss = { viewModel.showAboutDialog(false) }
                     )
                 }
             }
@@ -208,8 +221,41 @@ private fun PortraitContent(
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+        verticalArrangement = Arrangement.Top
     ) {
+        TurnStatusCard(uiState = uiState)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        GameBoardView(
+            board = uiState.board,
+            winningLine = uiState.winningLine,
+            selectedTheme = uiState.selectedTheme,
+            onTileClick = onTileClick,
+            modifier = Modifier.fillMaxWidth(0.95f)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botón Verde "REINICIAR JUEGO"
+        Button(
+            onClick = onResetBoard,
+            shape = RoundedCornerShape(4.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2E7D32) // Verde
+            ),
+            modifier = Modifier.fillMaxWidth(0.85f)
+        ) {
+            Text(
+                text = "REINICIAR JUEGO",
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         ScoreBoardCard(
             humanWins = uiState.humanWins,
             computerWins = uiState.computerWins,
@@ -222,25 +268,15 @@ private fun PortraitContent(
             onThemeClick = onThemeClick
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        TurnStatusCard(uiState = uiState)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        GameBoardView(
-            board = uiState.board,
-            winningLine = uiState.winningLine,
-            onTileClick = onTileClick,
-            modifier = Modifier.fillMaxWidth(0.95f)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ActionButtonsRow(
-            onResetBoard = onResetBoard,
-            onResetScores = onResetScores
-        )
+        OutlinedButton(
+            onClick = onResetScores,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth(0.85f)
+        ) {
+            Text(text = "Reiniciar Marcador", fontSize = 13.sp)
+        }
     }
 }
 
@@ -269,6 +305,28 @@ private fun LandscapeContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            TurnStatusCard(uiState = uiState)
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onResetBoard,
+                shape = RoundedCornerShape(4.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2E7D32)
+                ),
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                Text(
+                    text = "REINICIAR JUEGO",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             ScoreBoardCard(
                 humanWins = uiState.humanWins,
                 computerWins = uiState.computerWins,
@@ -281,16 +339,15 @@ private fun LandscapeContent(
                 onThemeClick = onThemeClick
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            TurnStatusCard(uiState = uiState)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ActionButtonsRow(
-                onResetBoard = onResetBoard,
-                onResetScores = onResetScores
-            )
+            OutlinedButton(
+                onClick = onResetScores,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                Text(text = "Reiniciar Marcador", fontSize = 12.sp)
+            }
         }
 
         Box(
@@ -302,6 +359,7 @@ private fun LandscapeContent(
             GameBoardView(
                 board = uiState.board,
                 winningLine = uiState.winningLine,
+                selectedTheme = uiState.selectedTheme,
                 onTileClick = onTileClick,
                 modifier = Modifier.fillMaxWidth(0.9f)
             )
@@ -314,62 +372,26 @@ private fun TurnStatusCard(uiState: GameState) {
     val statusText = when {
         uiState.isGameOver -> "Partida Finalizada"
         uiState.isCpuThinking -> "Procesando movimiento de la CPU..."
-        uiState.isHumanTurn -> "Turno del Jugador (X)"
-        else -> "Turno de la Computadora (O)"
-    }
-
-    val containerColor = when {
-        uiState.isGameOver -> MaterialTheme.colorScheme.secondaryContainer
-        uiState.isCpuThinking -> MaterialTheme.colorScheme.tertiaryContainer
-        uiState.isHumanTurn -> MaterialTheme.colorScheme.primaryContainer
-        else -> MaterialTheme.colorScheme.errorContainer
+        uiState.isHumanTurn -> "Tu turno (X)"
+        else -> "Turno de O"
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(0.9f),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        modifier = Modifier.fillMaxWidth(0.85f),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFE3F2FD)
+        )
     ) {
         Text(
             text = statusText,
-            fontSize = 15.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
+            color = Color(0xFF0D47A1),
             modifier = Modifier
-                .padding(vertical = 10.dp, horizontal = 16.dp)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
                 .fillMaxWidth(),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
-    }
-}
-
-@Composable
-private fun ActionButtonsRow(
-    onResetBoard: () -> Unit,
-    onResetScores: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(
-            onClick = onResetBoard,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(0.9f),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            Text(text = "Nueva Partida", fontWeight = FontWeight.Bold)
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        OutlinedButton(
-            onClick = onResetScores,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(0.9f)
-        ) {
-            Text(text = "Reiniciar Marcador", fontSize = 13.sp)
-        }
     }
 }

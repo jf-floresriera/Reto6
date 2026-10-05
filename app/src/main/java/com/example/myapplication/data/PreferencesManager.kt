@@ -4,9 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.myapplication.domain.AppTheme
 import com.example.myapplication.domain.DifficultyLevel
+import com.example.myapplication.domain.GameMode
 
 /**
- * Gestor de persistencia mediante SharedPreferences nativas de Android.
+ * Gestor de persistencia SharedPreferences ttt_prefs.
  */
 class PreferencesManager(context: Context) {
 
@@ -19,11 +20,11 @@ class PreferencesManager(context: Context) {
         private const val KEY_COMPUTER_WINS = "mComputerWins"
         private const val KEY_TIES = "mTies"
         private const val KEY_DIFFICULTY = "mDifficultyLevel"
+        private const val KEY_GAME_MODE = "mGameMode"
         private const val KEY_SOUND_ENABLED = "mSoundEnabled"
         private const val KEY_THEME = "mThemeChoice"
     }
 
-    /** Guardar marcador acumulado. */
     fun saveScores(humanWins: Int, computerWins: Int, ties: Int) {
         sharedPreferences.edit()
             .putInt(KEY_HUMAN_WINS, humanWins)
@@ -36,7 +37,6 @@ class PreferencesManager(context: Context) {
     fun getComputerWins(): Int = sharedPreferences.getInt(KEY_COMPUTER_WINS, 0)
     fun getTies(): Int = sharedPreferences.getInt(KEY_TIES, 0)
 
-    /** Guardar nivel de dificultad. */
     fun saveDifficulty(difficulty: DifficultyLevel) {
         sharedPreferences.edit()
             .putString(KEY_DIFFICULTY, difficulty.name)
@@ -44,15 +44,29 @@ class PreferencesManager(context: Context) {
     }
 
     fun getDifficulty(): DifficultyLevel {
-        val savedName = sharedPreferences.getString(KEY_DIFFICULTY, DifficultyLevel.EASY.name)
+        val savedName = sharedPreferences.getString(KEY_DIFFICULTY, DifficultyLevel.EXPERT.name)
         return try {
-            DifficultyLevel.valueOf(savedName ?: DifficultyLevel.EASY.name)
+            DifficultyLevel.valueOf(savedName ?: DifficultyLevel.EXPERT.name)
         } catch (e: Exception) {
-            DifficultyLevel.EASY
+            DifficultyLevel.EXPERT
         }
     }
 
-    /** Guardar y recuperar estado del sonido. */
+    fun saveGameMode(gameMode: GameMode) {
+        sharedPreferences.edit()
+            .putString(KEY_GAME_MODE, gameMode.name)
+            .apply()
+    }
+
+    fun getGameMode(): GameMode {
+        val savedMode = sharedPreferences.getString(KEY_GAME_MODE, GameMode.ONE_PLAYER.name)
+        return try {
+            GameMode.valueOf(savedMode ?: GameMode.ONE_PLAYER.name)
+        } catch (e: Exception) {
+            GameMode.ONE_PLAYER
+        }
+    }
+
     fun saveSoundEnabled(enabled: Boolean) {
         sharedPreferences.edit()
             .putBoolean(KEY_SOUND_ENABLED, enabled)
@@ -61,7 +75,6 @@ class PreferencesManager(context: Context) {
 
     fun isSoundEnabled(): Boolean = sharedPreferences.getBoolean(KEY_SOUND_ENABLED, true)
 
-    /** Guardar y recuperar tema visual. */
     fun saveTheme(theme: AppTheme) {
         sharedPreferences.edit()
             .putString(KEY_THEME, theme.name)
@@ -77,7 +90,6 @@ class PreferencesManager(context: Context) {
         }
     }
 
-    /** Reiniciar marcadores a cero. */
     fun resetScores() {
         sharedPreferences.edit()
             .putInt(KEY_HUMAN_WINS, 0)

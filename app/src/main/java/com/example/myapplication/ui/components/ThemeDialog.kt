@@ -23,9 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.domain.AppTheme
 
-/**
- * Diálogo modal para la selección del tema visual de la aplicación.
- */
 @Composable
 fun ThemeDialog(
     currentTheme: AppTheme,
@@ -34,33 +31,33 @@ fun ThemeDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(16.dp),
         title = {
             Text(
-                text = "Seleccionar Tema Visual",
+                text = "Elige un Tema",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                AppTheme.values().forEach { theme ->
+                AppTheme.entries.forEach { theme ->
                     val isSelected = theme == currentTheme
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(
-                                if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                                 else MaterialTheme.colorScheme.surface
                             )
                             .clickable {
                                 onThemeSelected(theme)
                                 onDismiss()
                             }
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
@@ -73,8 +70,8 @@ fun ThemeDialog(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = theme.displayName,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
