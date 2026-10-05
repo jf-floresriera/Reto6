@@ -10,6 +10,6 @@ enum class AppTheme(
 ) {
     CLASSIC("Clásico (X vs O)", "X", "O"),
     COSTA("Costa (🐚 vs ⭐)", "🐚", "⭐"),
-    LLANO("Llano Venezolano (🐓 vs 🪇)", "🐓", "🪇"),
+    LLANO("Llanos (🐓 vs 🪇)", "🐓", "🪇"),
     VAQUERO("Vaquero Country (🤠 vs 🐎)", "🤠", "🐎")
 }

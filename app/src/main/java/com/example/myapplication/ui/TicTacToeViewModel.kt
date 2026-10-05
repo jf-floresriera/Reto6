@@ -54,10 +54,10 @@ class TicTacToeViewModel(
         }
 
         if (currentState.gameMode == GameMode.ONE_PLAYER) {
-            // Modo 1 Jugador vs AI
             if (!currentState.isHumanTurn) return
 
-            soundManager.playHumanMove(currentState.soundEnabled)
+            // Sonido de movimiento del jugador adaptado al tema actual
+            soundManager.playHumanMove(currentState.selectedTheme, currentState.soundEnabled)
 
             val updatedBoard = currentState.board.toMutableList().apply {
                 set(index, BoardTile.HUMAN)
@@ -78,13 +78,12 @@ class TicTacToeViewModel(
                 triggerCpuMove()
             }
         } else {
-            // Modo 2 Jugadores Local
             val activePlayerTile = if (currentState.isHumanTurn) BoardTile.HUMAN else BoardTile.COMPUTER
 
             if (currentState.isHumanTurn) {
-                soundManager.playHumanMove(currentState.soundEnabled)
+                soundManager.playHumanMove(currentState.selectedTheme, currentState.soundEnabled)
             } else {
-                soundManager.playComputerMove(currentState.soundEnabled)
+                soundManager.playComputerMove(currentState.selectedTheme, currentState.soundEnabled)
             }
 
             val updatedBoard = currentState.board.toMutableList().apply {
@@ -115,7 +114,8 @@ class TicTacToeViewModel(
             val cpuMove = gameEngine.getCpuMove(currentState.board, currentState.difficulty)
 
             if (cpuMove != null) {
-                soundManager.playComputerMove(currentState.soundEnabled)
+                // Sonido de movimiento de la computadora adaptado al tema actual
+                soundManager.playComputerMove(currentState.selectedTheme, currentState.soundEnabled)
 
                 val updatedBoard = currentState.board.toMutableList().apply {
                     set(cpuMove, BoardTile.COMPUTER)
